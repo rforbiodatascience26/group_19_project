@@ -6,3 +6,7 @@
 # Dont save data to GitHub
 data/
 data/_raw/
+results/
+
+# from RStudio?
+/.quarto/
