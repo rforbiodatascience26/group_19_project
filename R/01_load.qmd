@@ -5,3 +5,41 @@ format:
     embed-resources: true
 editor: visual
 ---
+
+## Load 
+
+```{r}
+library("TCGAbiolinks")
+```
+
+# Load data
+
+```{r}
+test_query <- GDCquery(
+  project = "TCGA-BRCA",
+  data.category = "Transcriptome Profiling",
+  data.type = "Gene Expression Quantification",
+  workflow.type = "STAR - Counts",
+  barcode = c(
+    "TCGA-A1-A0SB",
+    "TCGA-A1-A0SD",
+    "TCGA-A1-A0SE"
+  )
+)
+
+test_query
+```
+
+```{r}
+results <- getResults(test_query)
+
+results[, c("id", "file_name")]
+```
+
+```{r}
+GDCdownload(
+  test_query,
+  directory = "../data/_raw"
+)
+
+```
