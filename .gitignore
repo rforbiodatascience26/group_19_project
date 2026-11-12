@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Dont save data to GitHub
+data/
+data/_raw/
