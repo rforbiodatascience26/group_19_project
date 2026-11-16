@@ -4,9 +4,13 @@
 .Ruserdata
 
 # Dont save data to GitHub
-data/
-data/_raw/
+data/*
 results/
 
 # from RStudio?
 /.quarto/
+
+# Keep the _raw folder structure and MANIFEST.txt tracked in Git
+!data/_raw/
+data/_raw/*
+!data/_raw/MANIFEST.txt
