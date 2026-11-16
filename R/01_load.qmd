@@ -6,40 +6,58 @@ format:
 editor: visual
 ---
 
-## Load 
+### Load environment
 
 ```{r}
+#| message: false
+#| warning: false
+
 library("TCGAbiolinks")
+library("tidyverse")
 ```
 
-# Load data
+### Load data
 
 ```{r}
-test_query <- GDCquery(
-  project = "TCGA-BRCA",
+# Load MANIFEST
+manifest_df <- read_tsv(file="../data/_raw/MANIFEST.txt",
+                         show_col_types = FALSE)
+
+# Extract dataset ids from MANIFEST
+manifest_ids <- manifest_df |>
+  pull(id)
+```
+
+```{r}
+# Queue TGCA for data
+data_query <- GDCquery(
+  project = "BEATAML1.0-COHORT",
   data.category = "Transcriptome Profiling",
   data.type = "Gene Expression Quantification",
-  workflow.type = "STAR - Counts",
-  barcode = c(
-    "TCGA-A1-A0SB",
-    "TCGA-A1-A0SD",
-    "TCGA-A1-A0SE"
-  )
+  workflow.type = "STAR - Counts"
 )
-
-test_query
 ```
 
 ```{r}
-results <- getResults(test_query)
+# Filter results based on MANIFEST
+query_result <- getResults(data_query)
 
-results[, c("id", "file_name")]
+# Update query result based on this
+data_query$results[[1]] <- query_result |> 
+  filter(id %in% manifest_ids)
 ```
 
 ```{r}
-GDCdownload(
-  test_query,
-  directory = "../data/_raw"
-)
+# Verify succesfull filtering
+success_flag <- nrow(data_query$results[[1]]) == length(manifest_ids)
+```
 
+```{r}
+# Download filtered query data
+if (success_flag) {
+  GDCdownload(query = data_query,
+            directory = "../data/_raw")
+} else {
+  cat("Mismatch in size between filtered query and MANIFEST ids provided.")
+}
 ```
