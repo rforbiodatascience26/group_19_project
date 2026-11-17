@@ -5,3 +5,48 @@ format:
     embed-resources: true
 editor: visual
 ---
+
+### Load environment
+
+```{r}
+#| message: false
+#| warning: false
+#| 
+library(tidyverse)
+```
+
+#### Obtain list of file paths for datasets
+
+```{r}
+dataset_paths <- list.files(path = "../data/_raw/BEATAML1.0-COHORT/Transcriptome_Profiling/Gene_Expression_Quantification/",
+                            recursive = TRUE,
+                            full.names = TRUE)
+
+head(dataset_paths)
+```
+
+#### Read all dataset files into a dataframe identified by file path
+
+```{r}
+df <- read_tsv(file = dataset_paths,
+               comment = "#",
+               id = "file",
+               show_col_types = FALSE)
+
+head(df)
+```
+
+#### Convert to count matrix with samples as columns
+
+```{r}
+count_matrix <- df |> 
+  select(file, gene_id, unstranded) |> 
+  filter(str_starts(gene_id, "ENS")) |> 
+  pivot_wider(names_from = file,
+              values_from = unstranded) |> 
+  rename_with(.cols = starts_with("../data/"),
+              .fn = ~ str_split_i(string = .x,
+                                  pattern = "/",
+                                  i = -2))
+head(count_matrix)
+```
