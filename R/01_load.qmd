@@ -22,7 +22,7 @@ data_dir <- "../data"
 raw_data_dir <- "../data/_raw"
 
 if (!dir.exists(data_dir)) {
-  dir.create(dest_dir)
+  dir.create(data_dir)
 }
 
 if (!dir.exists(raw_data_dir)) {
@@ -146,17 +146,17 @@ if (nrow(data_query$results[[1]]) == length(manifest_ids)) {
 }
 ```
 
-GDCdownload creates a file called MANIFEST.txt in the curent working directory. Move it to data/\_raw
+GDCdownload creates a file called MANIFEST.txt in the current working directory. Move it to data/\_raw. If the file already exists overwrite it.
 
 ```{r}
-manifest_file <- "MANIFEST.txt"
-
 if (file.exists("MANIFEST.txt")) {
-  file.rename("MANIFEST.txt", paste0(raw_data_dir, "/MANIFEST.txt"))
+  file.rename("MANIFEST.txt", 
+              paste0(raw_data_dir, 
+                     "/MANIFEST.txt"))
 }
 ```
 
-## Read data
+### Read data
 
 ```{r}
 dataset_paths <- list.files(path = "../data/_raw/BEATAML1.0-COHORT/Transcriptome_Profiling/Gene_Expression_Quantification/",
@@ -169,4 +169,14 @@ raw_df <- read_tsv(file = dataset_paths,
                    comment = "#",
                    id = "file",
                    show_col_types = FALSE)
+```
+
+## Write data file
+
+```{r}
+readr::write_tsv(
+  raw_df,
+  paste0(data_dir, 
+         "/01_dat_load.tsv.gz")
+)
 ```
