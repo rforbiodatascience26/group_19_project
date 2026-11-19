@@ -11,8 +11,17 @@ editor: visual
 ```{r}
 #| message: false
 #| warning: false
-#| 
-library(tidyverse)
+library("tidyverse")
+```
+
+### Load data
+
+```{r}
+data_dir <- "../data"
+
+df_clean <- readr::read_tsv(file = file.path(data_dir,
+                                             "02_dat_clean.tsv.gz"),
+                            col_names = TRUE)
 ```
 
 #### Convert to count matrix with samples as columns
@@ -28,4 +37,13 @@ count_matrix <- df |>
                                   pattern = "/",
                                   i = -2))
 head(count_matrix)
+```
+
+### Write data file
+
+```{r}
+readr::write_tsv(df_aug,
+                 file.path(data_dir,
+                           "03_dat_aug.tsv.gz")
+)
 ```

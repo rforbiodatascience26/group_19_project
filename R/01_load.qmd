@@ -15,7 +15,7 @@ library("TCGAbiolinks")
 library("tidyverse")
 ```
 
-## Create data directories 
+## Create data directories
 
 ```{r}
 data_dir <- "../data"
@@ -140,7 +140,7 @@ If data files is already downloaded GDCdownload handels it and wont download it 
 ```{r}
 if (nrow(data_query$results[[1]]) == length(manifest_ids)) {
   GDCdownload(query = data_query,
-            directory = "../data/_raw")
+              directory = "../data/_raw")
 } else {
   cat("Mismatch in size between filtered query and MANIFEST ids provided.")
 }
@@ -151,15 +151,21 @@ GDCdownload creates a file called MANIFEST.txt in the current working directory.
 ```{r}
 if (file.exists("MANIFEST.txt")) {
   file.rename("MANIFEST.txt", 
-              paste0(raw_data_dir, 
-                     "/MANIFEST.txt"))
+              file.path(raw_data_dir,
+                        "MANIFEST.txt"))
 }
 ```
 
 ### Read data
 
 ```{r}
-dataset_paths <- list.files(path = "../data/_raw/BEATAML1.0-COHORT/Transcriptome_Profiling/Gene_Expression_Quantification/",
+GDC_path <- file.path(raw_data_dir,
+                      data_query$project,
+                      gsub(" ", "_", data_query$data.category),
+                      gsub(" ", "_", data_query$data.type)
+)
+
+dataset_paths <- list.files(path = GDC_path,
                             recursive = TRUE,
                             full.names = TRUE)
 ```
@@ -174,9 +180,8 @@ raw_df <- readr::read_tsv(file = dataset_paths,
 ## Write data file
 
 ```{r}
-readr::write_tsv(
-  raw_df,
-  paste0(data_dir, 
-         "/01_dat_load.tsv.gz")
+readr::write_tsv(raw_df,
+                 file.path(data_dir,
+                           "01_dat_load.tsv.gz")
 )
 ```
