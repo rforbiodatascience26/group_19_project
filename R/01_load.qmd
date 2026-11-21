@@ -6,58 +6,182 @@ format:
 editor: visual
 ---
 
-### Load environment
+## Load libraries
 
 ```{r}
 #| message: false
 #| warning: false
-
 library("TCGAbiolinks")
 library("tidyverse")
 ```
 
-### Load data
+## Create data directories
 
 ```{r}
-# Load MANIFEST
-manifest_df <- read_tsv(file="../data/_raw/MANIFEST.txt",
-                         show_col_types = FALSE)
+data_dir <- "../data"
+raw_data_dir <- "../data/_raw"
 
-# Extract dataset ids from MANIFEST
-manifest_ids <- manifest_df |>
-  pull(id)
+if (!dir.exists(data_dir)) {
+  dir.create(data_dir)
+}
+
+if (!dir.exists(raw_data_dir)) {
+  dir.create(raw_data_dir)
+}
 ```
 
+## Load data
+
+Manifest of the studies we want to compare
+
 ```{r}
-# Queue TGCA for data
+manifest_ids <- c("b9ce4455-6be7-4e59-8fe3-617eada17989",
+                  "90e3ae5c-6d95-4c6f-be79-938615907321",
+                  "afaf103a-eb3a-4af4-a26f-7fdf6d8928ee",
+                  "388268ae-2b00-40bd-a8c5-90216e5ede34",
+                  "6e4f67e9-98af-4012-8656-c8bf43987ddf",
+                  "7381de45-7a35-47af-b909-f997cd9b02c0",
+                  "a20041e0-6014-48ba-bc2e-685dab205b6d",
+                  "32eb8d48-dc31-4224-a423-2a4931bf0fb5",
+                  "a95d86bd-5331-4a21-8e9b-9c013789d4f5",
+                  "73f77b65-b686-4338-8e1e-4b6ba451c219",
+                  "1ea5e789-916a-4f08-b267-bc992ebb5770",
+                  "1ba65878-426c-439a-b0dc-8537c09ab422",
+                  "51a11dc4-1e11-4363-8cbb-9110c9a058f9",
+                  "a824bcaa-3b81-4f0a-b500-9e2af94e449a",
+                  "fb0a6f8d-c0cf-4202-b63a-16df64ec0614",
+                  "e7872bd5-e9bb-4985-8c71-8e454a2dde5e",
+                  "30d6527d-ef6f-432c-a9a0-9b6fe2b2c27a",
+                  "434b062b-cbc9-4b55-aeb4-b8de6641d777",
+                  "b0e9b415-27fa-4650-8a40-3ef685760c75",
+                  "c7e39030-14cb-4de9-a6e5-9188c2a5ae8e",
+                  "1672d8c3-a904-48bd-a706-411f37187294",
+                  "f050194c-10c8-4987-b11e-d297626bb35d",
+                  "c14e4ca8-0874-45b8-bd38-64748d7a58f1",
+                  "22ceabca-17a1-439a-8986-252527ec0062",
+                  "6b3132a6-24ae-4bbf-a7eb-31701e5988e3",
+                  "1b6cac7a-0fdf-4500-b110-1cead4ced7da",
+                  "90d6f04a-7668-4351-9b86-6fc1638fd8d8",
+                  "9b61f05b-5671-4f2a-ac3b-cff00c7a0c37",
+                  "c197d901-8895-4013-8c29-e760c59f8b59",
+                  "ba578e47-3e56-4c61-9410-42c477c32fb1",
+                  "fe5f75ee-1edd-429e-a388-f7c14fc3211a",
+                  "b8e4a69b-c25e-46c9-ab2d-0b3513d51cda",
+                  "25b7bef8-9cac-4fc3-b6fe-e32a1153105f",
+                  "2d52ec43-ead0-4e55-9c27-4be7b05ef057",
+                  "f14f7c35-4a76-4e03-9e09-a3dd482c1527",
+                  "6af90418-bcd9-4b0e-b35b-41e3d0a41d65",
+                  "e0a1b384-18a7-493f-9301-8d94c89329ba",
+                  "fb050777-b83e-40d2-bd01-0f04e40bba34",
+                  "159010bf-c5e4-45e9-a87b-d785116785aa",
+                  "28994a63-7e96-47c8-a6df-5b7d8db2dd1d",
+                  "5e437615-fad5-4b08-8ac2-8c7dd86ac9c1",
+                  "d8b70528-dfcb-448c-9355-559f33058df2",
+                  "f9230b53-68ae-454e-9fce-bec4be2acad0",
+                  "dce08c84-fd25-477f-b04d-aedc874af914",
+                  "0f46c8b7-6a1e-4fea-9594-19b2867a237e",
+                  "58ecd994-7c26-420e-bdd5-f741d2c1774c",
+                  "aebd3e63-8823-4685-b520-886927de9f30",
+                  "ec153b3e-7a24-415f-b34e-efa2fbaeacbb",
+                  "70691262-2f4e-4963-8882-ae8a40f578d3",
+                  "533489e6-aae0-49b2-98cc-a95316459cda",
+                  "b316ab2c-c291-4ad4-8bd7-7ca4d756957d",
+                  "e8cd7fea-0ad1-4639-8b0b-595072e8dab6",
+                  "bea9e5ee-6cfe-4693-ad24-20c8c356ec94",
+                  "a567a583-7969-407a-87ef-2640e91f6764",
+                  "e21ffece-8364-47e9-8c3c-5fb917ad101d",
+                  "eb1601ba-c5d9-4e90-b226-e5b942a5dda1",
+                  "771e05c5-2c26-4dc7-9fa2-39198190de61",
+                  "623cc960-c02d-4655-9902-51ddec729daf",
+                  "c7beeeee-597b-415b-ad54-d4c95c9fc273",
+                  "1de5aec8-893f-4e67-b70c-39386faa5348",
+                  "4c1f02cc-4abe-4cdb-9774-23a8829cebab",
+                  "3c3fb969-1284-4337-a2f3-507357eb8018",
+                  "7f83808f-e780-4614-bf10-2578d391c93d",
+                  "878116a2-fab9-4f35-875f-002555a47c6c",
+                  "1f3987ae-fb24-4e5a-b8dd-7894cdcd1f53",
+                  "6da29925-2c34-4608-8abe-3a8415735ac5",
+                  "36ee85fc-1d73-441b-897e-668cb666e6d3",
+                  "fb0acfd8-ca70-44cc-9bfd-2445094729af",
+                  "753042b9-aef4-4d38-af22-619cdece4431",
+                  "c8bc64f3-5267-4686-87eb-adc3f0242ff1",
+                  "417ec1ad-0e40-48e3-a1ae-ce23b425afbc",
+                  "973068d8-550b-4d50-b41a-38b17c5590ce",
+                  "6e6676d5-b47f-4d1e-89a5-8cdcfb593872",
+                  "f1ab95fa-d23b-435a-bbee-96bd87ddca70",
+                  "2819b67c-2e60-4126-b5e4-5245eadff554")
+```
+
+### Queue The Cancer Genome Atlas for data
+
+```{r}
 data_query <- GDCquery(
   project = "BEATAML1.0-COHORT",
   data.category = "Transcriptome Profiling",
   data.type = "Gene Expression Quantification",
-  workflow.type = "STAR - Counts"
+  workflow.type = "STAR - Counts",
+  access = "open"
 )
 ```
 
+Filter query based on the manifest
+
 ```{r}
-# Filter results based on MANIFEST
 query_result <- getResults(data_query)
 
-# Update query result based on this
 data_query$results[[1]] <- query_result |> 
   filter(id %in% manifest_ids)
 ```
 
-```{r}
-# Verify succesfull filtering
-success_flag <- nrow(data_query$results[[1]]) == length(manifest_ids)
-```
+### Download data
+
+If data files is already downloaded GDCdownload handels it and wont download it again.
 
 ```{r}
-# Download filtered query data
-if (success_flag) {
+if (nrow(data_query$results[[1]]) == length(manifest_ids)) {
   GDCdownload(query = data_query,
-            directory = "../data/_raw")
+              directory = "../data/_raw")
 } else {
   cat("Mismatch in size between filtered query and MANIFEST ids provided.")
 }
+```
+
+GDCdownload creates a file called MANIFEST.txt in the current working directory. Move it to data/\_raw. If the file already exists overwrite it.
+
+```{r}
+if (file.exists("MANIFEST.txt")) {
+  file.rename("MANIFEST.txt", 
+              file.path(raw_data_dir,
+                        "MANIFEST.txt"))
+}
+```
+
+### Read data
+
+```{r}
+GDC_path <- file.path(raw_data_dir,
+                      data_query$project,
+                      gsub(" ", "_", data_query$data.category),
+                      gsub(" ", "_", data_query$data.type)
+)
+
+dataset_paths <- list.files(path = GDC_path,
+                            recursive = TRUE,
+                            full.names = TRUE)
+```
+
+```{r}
+raw_df <- readr::read_tsv(file = dataset_paths,
+                          comment = "#",
+                          id = "file",
+                          show_col_types = FALSE)
+```
+
+## Write data file
+
+```{r}
+readr::write_tsv(raw_df,
+                 file.path(data_dir,
+                           "01_dat_load.tsv.gz")
+)
 ```

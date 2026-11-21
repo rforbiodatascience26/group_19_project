@@ -5,3 +5,15 @@ format:
     embed-resources: true
 editor: visual
 ---
+
+### Load data
+
+```{r}
+data_dir <- "../data"  
+
+df_aug <- readr::read_tsv(file = file.path(data_dir,
+                                           "03_dat_aug.tsv.gz"),
+                          col_names = TRUE)
+```
+
+#### 

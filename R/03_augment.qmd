@@ -5,3 +5,45 @@ format:
     embed-resources: true
 editor: visual
 ---
+
+### Load environment
+
+```{r}
+#| message: false
+#| warning: false
+library("tidyverse")
+```
+
+### Load data
+
+```{r}
+data_dir <- "../data"
+
+df_clean <- readr::read_tsv(file = file.path(data_dir,
+                                             "02_dat_clean.tsv.gz"),
+                            col_names = TRUE)
+```
+
+#### Convert to count matrix with samples as columns
+
+```{r}
+count_matrix <- df |> 
+  select(file, gene_id, unstranded) |> 
+  filter(str_starts(gene_id, "ENS")) |> 
+  pivot_wider(names_from = file,
+              values_from = unstranded) |> 
+  rename_with(.cols = starts_with("../data/"),
+              .fn = ~ str_split_i(string = .x,
+                                  pattern = "/",
+                                  i = -2))
+head(count_matrix)
+```
+
+### Write data file
+
+```{r}
+readr::write_tsv(df_aug,
+                 file.path(data_dir,
+                           "03_dat_aug.tsv.gz")
+)
+```
