@@ -114,7 +114,7 @@ manifest_ids <- c("b9ce4455-6be7-4e59-8fe3-617eada17989",
                   "2819b67c-2e60-4126-b5e4-5245eadff554")
 ```
 
-### Queue The Cancer Genome Atlas for data
+### Queue The Cancer Genome Atlas for count and clinical data
 
 ```{r}
 data_query <- GDCquery(
@@ -125,13 +125,24 @@ data_query <- GDCquery(
   access = "open")
 ```
 
-Filter query based on the manifest
+```{r}
+clinical_raw <- GDCquery_clinic(
+  project = "BEATAML1.0-COHORT",
+  type = "clinical"
+) |> 
+  as_tibble(.name_repair = make.unique)
+```
+
+Filter query based on the manifest, and store query for later mapping between count and clinical data
 
 ```{r}
 query_result <- getResults(data_query)
 
 data_query$results[[1]] <- query_result |> 
   filter(id %in% manifest_ids)
+
+sample_map_raw <- data_query$results[[1]] |> 
+  as_tibble()
 ```
 
 ### Download data
@@ -195,18 +206,18 @@ raw_df <- readr::read_tsv(file = dataset_paths,
                           show_col_types = FALSE)
 ```
 
-```{r}
-check_format_gtf <- readr::read_tsv(gtf_path,
-                                    comment = "#",
-                                    col_names = FALSE,
-                                    n_max = 10)
-print(check_format_gtf)
-```
-
 ## Write data file
 
 ```{r}
 readr::write_tsv(raw_df,
                  file.path(data_dir,
                            "01_dat_load.tsv.gz"))
+
+readr::write_tsv(clinical_raw, 
+                 file.path(data_dir, 
+                           "01_clin_load.tsv.gz"))
+
+readr::write_tsv(sample_map_raw, 
+                 file.path(data_dir,
+                           "01_sample_map_load.tsv.gz"))
 ```
