@@ -22,12 +22,12 @@ source(here("R",
             "99_proj_func.R"))
 quarto_render(here("R", 
                    "01_load.qmd"))
-#quarto_render(here("R", 
-#                                 "02_clean.qmd"))
-#quarto_render(here("R", 
-#                                 "03_augment.qmd"))
-#quarto_render(here("R", 
-#                                 "04_describe.qmd"))
+quarto_render(here("R",
+                   "02_clean.qmd"))
+quarto_render(here("R",
+                   "03_augment.qmd"))
+quarto_render(here("R",
+                   "04_describe.qmd"))
 #quarto_render(here("R", 
 #                                 "05_analysis_1.qmd"))
 #quarto_render(here("R", 
