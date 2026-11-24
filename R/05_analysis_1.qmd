@@ -5,3 +5,16 @@ format:
     embed-resources: true
 editor: visual
 ---
+
+### Manual differential expression analysis
+
+To uncover what genes are up- or downregulated based on different stratifications such as: age groups, race, vital status etc.
+
+#### DEA stratified on vital status
+
+```{r}
+augment_df |>
+  select(gene_name, log2_tpm, vital_status) |> 
+  mutate(vital_status = case_when(vital_status == "Dead" ~ 1,
+                                  vital_status == "Alive" ~ 0))
+```
