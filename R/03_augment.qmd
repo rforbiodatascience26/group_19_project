@@ -53,6 +53,19 @@ augment_df <- clean_df |>
             by = join_by(sample_id))
 ```
 
+#### Convert TPM counts to log2 expression values
+
+Centers expressions around 0 and allows for easier interpretability of fold changes.
+
+```{r}
+augment_df <- augment_df |> 
+  mutate(log2_tpm = log2(tpm_unstranded + 1)) |> 
+  relocate(log2_tpm, 
+           .before = submitter_id)
+
+head(augment_df)
+```
+
 #### Convert to count matrix with samples as columns
 
 ```{r}
