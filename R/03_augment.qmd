@@ -19,7 +19,7 @@ library("here")
 
 ```{r}
 data_dir <- here("data")
-augment_df <- readr::read_tsv(file = file.path(data_dir,
+clean_df <- readr::read_tsv(file = file.path(data_dir,
                                                "02_dat_clean.tsv.gz"),
                               col_names = TRUE,
                               show_col_types = FALSE)
