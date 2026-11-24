@@ -6,10 +6,18 @@ format:
 editor: visual
 ---
 
+## Load libraries
+
+```{r}
+#| message: false 
+#| warning: false 
+library("here")
+```
+
 ### Load data
 
 ```{r}
-data_dir <- "../data"  
+data_dir <- here("data")  
 
 df_aug <- readr::read_tsv(file = file.path(data_dir,
                                            "03_dat_aug.tsv.gz"),

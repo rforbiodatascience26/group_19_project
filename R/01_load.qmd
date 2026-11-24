@@ -13,13 +13,15 @@ editor: visual
 #| warning: false
 library("TCGAbiolinks")
 library("tidyverse")
+library("here")
 ```
 
 ## Create data directories
 
 ```{r}
-data_dir <- "../data"
-raw_data_dir <- "../data/_raw"
+data_dir <- here("data")
+raw_data_dir <- here(file.path("data", 
+                               "_raw"))
 
 if (!dir.exists(data_dir)) {
   dir.create(data_dir)
@@ -120,8 +122,7 @@ data_query <- GDCquery(
   data.category = "Transcriptome Profiling",
   data.type = "Gene Expression Quantification",
   workflow.type = "STAR - Counts",
-  access = "open"
-)
+  access = "open")
 ```
 
 Filter query based on the manifest
@@ -140,7 +141,7 @@ If data files is already downloaded GDCdownload handels it and wont download it 
 ```{r}
 if (nrow(data_query$results[[1]]) == length(manifest_ids)) {
   GDCdownload(query = data_query,
-              directory = "../data/_raw")
+              directory = raw_data_dir)
 } else {
   cat("Mismatch in size between filtered query and MANIFEST ids provided.")
 }
@@ -162,8 +163,7 @@ if (file.exists("MANIFEST.txt")) {
 GDC_path <- file.path(raw_data_dir,
                       data_query$project,
                       gsub(" ", "_", data_query$data.category),
-                      gsub(" ", "_", data_query$data.type)
-)
+                      gsub(" ", "_", data_query$data.type))
 
 dataset_paths <- list.files(path = GDC_path,
                             recursive = TRUE,
@@ -182,6 +182,5 @@ raw_df <- readr::read_tsv(file = dataset_paths,
 ```{r}
 readr::write_tsv(raw_df,
                  file.path(data_dir,
-                           "01_dat_load.tsv.gz")
-)
+                           "01_dat_load.tsv.gz"))
 ```

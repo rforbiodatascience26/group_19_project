@@ -12,13 +12,13 @@ editor: visual
 #| message: false
 #| warning: false
 library("tidyverse")
+library("here")
 ```
 
 ### Load data
 
 ```{r}
-data_dir <- "../data"
-
+data_dir <- here("data")
 augment_df <- readr::read_tsv(file = file.path(data_dir,
                                                "02_dat_clean.tsv.gz"),
                               col_names = TRUE,
@@ -52,6 +52,5 @@ augment_df_wider <- augment_df |>
 ```{r}
 readr::write_tsv(df_aug,
                  file.path(data_dir,
-                           "03_dat_aug.tsv.gz")
-)
+                           "03_dat_aug.tsv.gz"))
 ```

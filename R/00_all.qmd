@@ -6,21 +6,30 @@ format:
 editor: visual
 ---
 
+## Load libraries
+
+```{r}
+#| message: false
+#| warning: false
+library("here")
+library("quarto")
+```
+
 # Run Project
 
 ```{r}
-source(here::here("R", 
-                  "99_proj_func.R"))
-quarto::quarto_render(here::here("R", 
-                                 "01_load.qmd"))
-#quarto::quarto_render(here::here("R", 
+source(here("R", 
+            "99_proj_func.R"))
+quarto_render(here("R", 
+                   "01_load.qmd"))
+#quarto_render(here("R", 
 #                                 "02_clean.qmd"))
-#quarto::quarto_render(here::here("R", 
+#quarto_render(here("R", 
 #                                 "03_augment.qmd"))
-#quarto::quarto_render(here::here("R", 
+#quarto_render(here("R", 
 #                                 "04_describe.qmd"))
-#quarto::quarto_render(here::here("R", 
+#quarto_render(here("R", 
 #                                 "05_analysis_1.qmd"))
-#quarto::quarto_render(here::here("R", 
+#quarto_render(here("R", 
 #                                 "06_analysis_2.qmd"))
 ```
