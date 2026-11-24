@@ -61,3 +61,20 @@ if (success_flag) {
   cat("Mismatch in size between filtered query and MANIFEST ids provided.")
 }
 ```
+
+## Load annotation
+
+```{r}
+# download the gene annotation GDC.h38 GENCODE v36 GTF
+gtf_url <- "https://cancer.gov"
+gtf_file <- "gencode.v36.annotation.gtf.gz"
+
+# set timeout to 600 since the file is large
+options(timeout = 600)
+if (!file.exists(gtf_file)) {
+  download.file(gtf_url,
+                destfile = gtf_file,
+                directory = "../data/_raw"
+                )
+}
+```
