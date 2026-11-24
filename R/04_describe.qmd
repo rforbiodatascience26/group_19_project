@@ -16,7 +16,7 @@ library("tidyverse")
 library("table1")
 ```
 
-### Load data
+## Load data
 
 ```{r}
 data_dir <- here("data")  
@@ -27,6 +27,16 @@ describe_df <- readr::read_tsv(file = file.path(data_dir,
                                show_col_types = FALSE)
 ```
 
+### Workaround for age_at_diagnosis
+
+```{r}
+describe_df <- describe_df |>
+  mutate(age_years = round(age_at_diagnosis / 365.25,
+                                  digits = 1))
+```
+
+## Dataset overview
+
 ```{r}
 n_samples <- n_distinct(describe_df$sample_id)
 n_genes <- n_distinct(describe_df$gene_id)
@@ -34,8 +44,21 @@ n_genes <- n_distinct(describe_df$gene_id)
 
 Our data set have `r n_samples` and each sample contains expression values of `r n_genes` gene isoforms.
 
+### NA values
+
 ```{r}
 describe_df |>
+  distinct(sample_id, 
+           .keep_all = TRUE) |>
+  summarise(across(everything(), 
+                   ~ sum(is.na(.)))) |>
+  select(where(~ . > 0))
+```
+
+```{r}
+describe_df |>
+  distinct(sample_id, 
+           .keep_all = TRUE) |>
   mutate(Gender = factor(sex_at_birth),
          vital_status = factor(vital_status),
          eln_risk_classification = factor(eln_risk_classification)) |>
@@ -45,29 +68,89 @@ describe_df |>
 
 ```{r}
 describe_df |>
+  distinct(sample_id, 
+           .keep_all = TRUE) |>
   mutate(Gender = factor(sex_at_birth),
          vital_status = factor(vital_status),
-         eln_risk_classification = factor(eln_risk_classification)) |>
-  table1(x = formula(~ vital_status + eln_risk_classification | Gender),
+         Age_group = cut(x = age_years, 
+                         breaks = seq(from = 0,
+                                      to = 100,
+                                      by = 10))) |>
+  droplevels() |>
+  table1(x = formula(~ Gender + Age_group | vital_status),
          data = _)
 ```
 
 ```{r}
-describe_df |>
-  mutate(Gender = factor(sex_at_birth),
-         vital_status = factor(vital_status),
-         eln_risk_classification = factor(eln_risk_classification),
-         age_at_diagnosis = factor(age_at_diagnosis)) |>
-  table1(x = formula(~ vital_status + eln_risk_classification + age_at_diagnosis | Gender),
-         data = _)
+describe_df |> 
+  distinct(sample_id, 
+           .keep_all = TRUE) |>
+  mutate(Age_group = cut(
+    x = age_years,
+    breaks = seq(from = 0,
+                 to = 100,
+                 by = 10))) |> 
+  drop_na(vital_status, Age_group) |> 
+  count(vital_status, Age_group) |> 
+  ggplot(aes(x = Age_group,
+             y = n,
+             fill = vital_status)) +
+  geom_col(position = position_dodge(
+    preserve = "single"),
+    colour = "black",
+    alpha = 0.5) +
+  geom_hline(yintercept = 0) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        panel.grid.major.x = element_blank(),
+        axis.text.x = element_text(vjust = 5))
 ```
 
 ```{r}
 describe_df |>
+  distinct(sample_id, 
+           .keep_all = TRUE) |>
   mutate(Gender = factor(sex_at_birth),
          vital_status = factor(vital_status),
          eln_risk_classification = factor(eln_risk_classification),
          race = factor(race)) |>
   table1(x = formula(~ vital_status + eln_risk_classification + race | Gender),
          data = _)
+```
+
+```{r}
+describe_df |> 
+  distinct(sample_id, 
+           .keep_all = TRUE) |>
+  drop_na(eln_risk_classification) |> 
+  count(vital_status, eln_risk_classification) |> 
+  ggplot(aes(x = eln_risk_classification,
+             y = n,
+             fill = vital_status)) +
+  geom_col(position = position_dodge(
+    preserve = "single"),
+    colour = "black",
+    alpha = 0.5) +
+  geom_hline(yintercept = 0) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        panel.grid.major.x = element_blank(),
+        axis.text.x = element_text(vjust = 5))
+```
+
+```{r}
+describe_df |>
+  distinct(sample_id, vital_status) |>
+ggplot(aes(x = vital_status)) +
+  geom_bar()
+```
+
+```{r}
+describe_df |>
+  distinct(sample_id, sample_type) |>
+  count(sample_type) |>
+  ggplot(aes(x = reorder(sample_type, n),
+           y = n)) +
+    geom_col() +
+    coord_flip()
 ```
