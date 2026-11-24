@@ -60,7 +60,10 @@ clinical_clean <- clinical_raw |>
          vital_status,
          sex_at_birth,
          eln_risk_classification,
-         primary_diagnosis)
+         primary_diagnosis,
+         age_at_diagnosis,
+         race,
+         ethnicity)
 ```
 
 ## Write data file
