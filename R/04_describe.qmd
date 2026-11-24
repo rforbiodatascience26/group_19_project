@@ -5,6 +5,7 @@ format:
     embed-resources: true
 editor: visual
 ---
+<<<<<<< HEAD
 
 ## Load libraries
 
@@ -25,3 +26,5 @@ df_aug <- readr::read_tsv(file = file.path(data_dir,
 ```
 
 #### 
+=======
+>>>>>>> c26b515aa198a239544cbecd668402787d9797cc

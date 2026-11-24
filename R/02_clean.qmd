@@ -5,6 +5,7 @@ format:
     embed-resources: true
 editor: visual
 ---
+<<<<<<< HEAD
 
 ```{r}
 library("tidyverse")
@@ -106,3 +107,5 @@ readr::write_tsv(clean_df,
                  file.path(data_dir, 
                            "02_dat_clean.tsv.gz"))
 ```
+=======
+>>>>>>> c26b515aa198a239544cbecd668402787d9797cc

@@ -5,6 +5,7 @@ format:
     embed-resources: true
 editor: visual
 ---
+<<<<<<< HEAD
 
 ### Load environment
 
@@ -54,3 +55,5 @@ readr::write_tsv(df_aug,
                  file.path(data_dir,
                            "03_dat_aug.tsv.gz"))
 ```
+=======
+>>>>>>> c26b515aa198a239544cbecd668402787d9797cc
