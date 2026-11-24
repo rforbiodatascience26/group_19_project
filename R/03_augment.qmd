@@ -19,9 +19,10 @@ library("tidyverse")
 ```{r}
 data_dir <- "../data"
 
-df_clean <- readr::read_tsv(file = file.path(data_dir,
-                                             "02_dat_clean.tsv.gz"),
-                            col_names = TRUE)
+augment_df <- readr::read_tsv(file = file.path(data_dir,
+                                               "02_dat_clean.tsv.gz"),
+                              col_names = TRUE,
+                              show_col_types = FALSE)
 ```
 
 #### Convert to count matrix with samples as columns
@@ -37,6 +38,13 @@ count_matrix <- df |>
                                   pattern = "/",
                                   i = -2))
 head(count_matrix)
+```
+
+```{r}
+augment_df_wider <- augment_df |>
+  select(sample_id, gene_id, unstranded) |>
+  pivot_wider(names_from = sample_id,
+              values_from = unstranded)
 ```
 
 ### Write data file

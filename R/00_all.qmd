@@ -5,3 +5,22 @@ format:
     embed-resources: true
 editor: visual
 ---
+
+# Run Project
+
+```{r}
+source(here::here("R", 
+                  "99_proj_func.R"))
+quarto::quarto_render(here::here("R", 
+                                 "01_load.qmd"))
+#quarto::quarto_render(here::here("R", 
+#                                 "02_clean.qmd"))
+#quarto::quarto_render(here::here("R", 
+#                                 "03_augment.qmd"))
+#quarto::quarto_render(here::here("R", 
+#                                 "04_describe.qmd"))
+#quarto::quarto_render(here::here("R", 
+#                                 "05_analysis_1.qmd"))
+#quarto::quarto_render(here::here("R", 
+#                                 "06_analysis_2.qmd"))
+```

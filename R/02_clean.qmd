@@ -8,7 +8,7 @@ editor: visual
 
 ```{r}
 
-library(tidyverse)
+library("tidyverse")
 ```
 
 ## Locate RNA-seq files
@@ -73,4 +73,39 @@ write_tsv(
   count_data,
   "../data/02_dat_clean.tsv"
 )
+```
+
+# New version 
+
+## Load data
+
+```{r}
+data_dir <- "../data"   
+clean_df <- readr::read_tsv(file = file.path(data_dir,
+                                             "01_dat_load.tsv.gz"), 
+                            col_names = TRUE,     
+                            show_col_types = FALSE
+                            )
+```
+
+## Clean data
+
+```{r}
+clean_df <- clean_df |>   
+  drop_na(gene_name) |>   
+  mutate(sample_id = basename(dirname(file))) |>   
+  select(c("sample_id",             
+           "gene_id",             
+           "gene_name",             
+           "gene_type",             
+           "unstranded"))
+```
+
+## Write data file
+
+```{r}
+readr::write_tsv(clean_df,
+                 file.path(data_dir, 
+                           "02_dat_clean.tsv.gz") 
+                 )
 ```
