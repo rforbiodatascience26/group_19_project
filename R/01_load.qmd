@@ -195,6 +195,14 @@ raw_df <- readr::read_tsv(file = dataset_paths,
                           show_col_types = FALSE)
 ```
 
+```{r}
+check_format_gtf <- readr::read_tsv(gtf_path,
+                                    comment = "#",
+                                    col_names = FALSE,
+                                    n_max = 10)
+print(check_format_gtf)
+```
+
 ## Write data file
 
 ```{r}
