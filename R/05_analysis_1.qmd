@@ -12,9 +12,16 @@ To uncover what genes are up- or downregulated based on different stratification
 
 #### DEA stratified on vital status
 
+We convert the condition (vital status) to a binary vector and then group the dataframe by gene_names, obtaining tibbles with paired expression values and vital status of the source per gene.
+
 ```{r}
 augment_df |>
   select(gene_name, log2_tpm, vital_status) |> 
   mutate(vital_status = case_when(vital_status == "Dead" ~ 1,
-                                  vital_status == "Alive" ~ 0))
+                                  vital_status == "Alive" ~ 0)) |> 
+  group_by(gene_name) |> 
+  nest() |> 
+  mutate(model_object = map(.x = data,
+                            .f = ~ lm(formula = log2_tpm ~ vital_status,
+                                      data = .x)))
 ```
