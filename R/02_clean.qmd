@@ -5,77 +5,13 @@ format:
     embed-resources: true
 editor: visual
 ---
-<<<<<<< HEAD
+
+## Load libraries
 
 ```{r}
 library("tidyverse")
 library("here")
 ```
-
-## Locate RNA-seq files
-
-```{r}
-files <- list.files(
-  "../data/_raw",
-  recursive = TRUE,
-  pattern = "gene_counts.tsv$",
-  full.names = TRUE
-)
-
-length(files)
-```
-
-## Function to read one file
-
-```{r}
-# ideen bag det er vi vil gerne importere count data uden at få meta data med.
-# vi vil også fjerene secuencerings diagonestic da det ikke r gen data. 
-# vi smider sample_id på for at så vi hvor hvilken sample de kommer fra. 
-read_count_file <- function(file) {
-  
-  sample_id <- basename(dirname(file))
-  
-  read_tsv(
-    file,
-    comment = "#",
-    show_col_types = FALSE
-  ) |>
-    select(
-      gene_id,
-      gene_name,
-      gene_type,
-      unstranded
-    ) |>
-    filter(
-      !str_detect(gene_id, "^N_")
-    ) |>
-    mutate(
-      sample_id = sample_id
-    )
-}
-```
-
-## Read all files
-
-```{r}
-# her er ideen at smidder det hele ind i et data set.
-count_data <- map_dfr(
-  files,
-  read_count_file
-)
-
-glimpse(count_data)
-```
-
-## Save cleaned data
-
-```{r}
-write_tsv(
-  count_data,
-  "../data/02_dat_clean.tsv")
-```
-
-# New version 
 
 ## Load data
 
@@ -107,5 +43,3 @@ readr::write_tsv(clean_df,
                  file.path(data_dir, 
                            "02_dat_clean.tsv.gz"))
 ```
-=======
->>>>>>> c26b515aa198a239544cbecd668402787d9797cc
