@@ -147,23 +147,6 @@ if (nrow(data_query$results[[1]]) == length(manifest_ids)) {
 }
 ```
 
-## Load annotation
-
-```{r}
-# download the gene annotation GDC.h38 GENCODE v36 GTF
-gtf_url <- "https://cancer.gov"
-gtf_file <- "gencode.v36.annotation.gtf.gz"
-
-# set timeout to 600 since the file is large
-options(timeout = 600)
-if (!file.exists(gtf_file)) {
-  download.file(gtf_url,
-                destfile = gtf_file,
-                directory = "../data/_raw"
-                )
-}
-```
-
 GDCdownload creates a file called MANIFEST.txt in the current working directory. Move it to data/\_raw. If the file already exists overwrite it.
 
 ```{r}
@@ -171,6 +154,24 @@ if (file.exists("MANIFEST.txt")) {
   file.rename("MANIFEST.txt", 
               file.path(raw_data_dir,
                         "MANIFEST.txt"))
+}
+```
+
+## Load annotation
+
+```{r}
+# download the gene annotation GDC.h38 GENCODE v36 GTF
+gtf_url <- "https://api.gdc.cancer.gov/data/be002a2c-3b27-43f3-9e0f-fd47db92a6b5"
+gtf_file <- "gencode.v36.annotation.gtf.gz"
+gtf_path <- file.path(raw_data_dir, gtf_file)
+
+# set timeout to 600 since the file is large
+options(timeout = 600)
+if (!file.exists(gtf_path)) {
+  download.file(gtf_url,
+                destfile = gtf_path,
+                mode = "wb"
+                )
 }
 ```
 
