@@ -69,16 +69,16 @@ head(augment_df)
 #### Convert to count matrix with samples as columns
 
 ```{r}
-augment_df_wider <- augment_df |>
-  select(sample_id, gene_id, unstranded) |>
-  pivot_wider(names_from = sample_id,
-              values_from = unstranded)
+#augment_df_wider <- augment_df |>
+#  select(sample_id, gene_id, unstranded) |>
+#  pivot_wider(names_from = sample_id,
+#              values_from = unstranded)
 ```
 
 ### Write data file
 
 ```{r}
-readr::write_tsv(df_aug,
+readr::write_tsv(augment_df,
                  file.path(data_dir,
                            "03_dat_aug.tsv.gz"))
 ```
