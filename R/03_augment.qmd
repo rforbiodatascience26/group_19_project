@@ -55,7 +55,7 @@ augment_df <- clean_df |>
 
 #### Select subset of genes to perform analysis on
 
-To allow for a lighter downstream analysis computationally, we subset the data so noninformative and nonexpressed genes (we maintain genes with a TPM_unstranded of \>1 in 20% of the samples) are removed and only expressed protein-coding genes are maintained.
+To allow for a lighter downstream analysis computationally, we subset the data so noninformative and nonexpressed genes are removed (we maintain genes with a TPM_unstranded of \>1 in 20% of the samples) and only expressed protein-coding genes are maintained.
 
 ```{r}
 n_samples <- nrow(meta_df)
