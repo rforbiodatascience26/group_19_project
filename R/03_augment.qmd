@@ -53,6 +53,20 @@ augment_df <- clean_df |>
             by = join_by(sample_id))
 ```
 
+#### Select subset of genes to perform analysis on
+
+To allow for a lighter downstream analysis computationally, we subset the data so noninformative and nonexpressed genes (we maintain genes with a TPM_unstranded of \>1 in 20% of the samples) are removed and only expressed protein-coding genes are maintained.
+
+```{r}
+n_samples <- nrow(meta_df)
+n_threshold <- n_samples %/% 5
+
+augment_df <- augment_df |> 
+  group_by(gene_name) |> 
+  filter(sum(tpm_unstranded > 1) >= n_threshold & gene_type == "protein_coding") |> 
+  ungroup()
+```
+
 #### Convert TPM counts to log2 expression values
 
 Centers expressions around 0 and allows for easier interpretability of fold changes.
@@ -62,8 +76,6 @@ augment_df <- augment_df |>
   mutate(log2_tpm = log2(tpm_unstranded + 1)) |> 
   relocate(log2_tpm, 
            .before = submitter_id)
-
-head(augment_df)
 ```
 
 #### Convert to count matrix with samples as columns
