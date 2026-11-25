@@ -6,22 +6,114 @@ format:
 editor: visual
 ---
 
-### Manual differential expression analysis
+### Load environment
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(here)
+library(broom)
+```
+
+```{r}
+data_dir <- here("data")
+
+augment_df <- readr::read_tsv(file = file.path(data_dir,
+                                                "03_dat_aug.tsv.gz"),
+                              col_names = TRUE,
+                              show_col_types = FALSE)
+```
+
+## Manual differential expression analysis
 
 To uncover what genes are up- or downregulated based on different stratifications such as: age groups, race, vital status etc.
 
-#### DEA stratified on vital status
+### DEA stratified on vital status
 
-We convert the condition (vital status) to a binary vector and then group the dataframe by gene_names, obtaining tibbles with paired expression values and vital status of the source per gene.
+We convert the condition (vital status) to a binary vector and then group the dataframe by gene_names, obtaining tibbles with paired expression values and vital status of the source per gene. We remove observations with a vital status of "Unknown".
 
 ```{r}
-augment_df |>
+vital_df <- augment_df |>
   select(gene_name, log2_tpm, vital_status) |> 
-  mutate(vital_status = case_when(vital_status == "Dead" ~ 1,
-                                  vital_status == "Alive" ~ 0)) |> 
+  filter(vital_status != "Unknown") |> 
+  mutate(vital_status = case_when(vital_status == "Dead" ~ 0,
+                                  vital_status == "Alive" ~ 1)) |> 
   group_by(gene_name) |> 
-  nest() |> 
+  nest()
+```
+
+We apply a linear model to each nested gene, and extract statistics using a default alpha-level threshold of 5%.
+
+```{r}
+model_nest_df <- vital_df |> 
   mutate(model_object = map(.x = data,
                             .f = ~ lm(formula = log2_tpm ~ vital_status,
-                                      data = .x)))
+                                      data = .x)),
+         model_object_tidy = map(.x = model_object,
+                                 .f = ~ tidy(x = .x,
+                                             conf.int = TRUE)))
+```
+
+We extract the statistics of interest and apply an FDR correction for the adjusted p-value as we now consider the unnested data.
+
+```{r}
+model_vital_df <- model_nest_df |> 
+  unnest(model_object_tidy) |> 
+  filter(term != "(Intercept)") |> 
+  select(gene_name, p.value, estimate, conf.low, conf.high) |> 
+  ungroup() |> 
+  mutate(
+    p.adj = p.adjust(p = p.value, method = "fdr"),
+    significant = p.adj < 0.05
+  ) |> 
+  arrange(p.adj)
+```
+
+```{r}
+head(model_vital_df)
+```
+
+### DEA stratified on ELN risk
+
+Same pipeline is repeated on the data with ELN risk classification as stratifying factor.
+
+```{r}
+eln_df <- augment_df |>
+  select(gene_name, log2_tpm, eln_risk_classification) |> 
+  filter(eln_risk_classification %in% c("Adverse", "Favorable")) |> 
+  mutate(eln_risk_classification = case_when(eln_risk_classification == "Adverse" ~ 0,
+                                             eln_risk_classification == "Favorable" ~ 1)) |> 
+  group_by(gene_name) |> 
+  nest()
+```
+
+```{r}
+eln_nest_df <- eln_df |> 
+  mutate(model_object = map(.x = data,
+                            .f = ~ lm(formula = log2_tpm ~ eln_risk_classification,
+                                      data = .x)),
+         model_object_tidy = map(.x = model_object,
+                                 .f = ~ tidy(x = .x,
+                                             conf.int = TRUE)))
+```
+
+```{r}
+model_eln_df <- eln_nest_df |> 
+  unnest(model_object_tidy) |> 
+  filter(term != "(Intercept)") |> 
+  select(gene_name, p.value, estimate, conf.low, conf.high) |> 
+  ungroup() |> 
+  mutate(
+    p.adj = p.adjust(p = p.value, method = "fdr"),
+    significant = p.adj < 0.05,
+    FC = 2^abs(estimate),
+  ) |> 
+  relocate(FC, .before = conf.low) |> 
+  arrange(p.adj)
+```
+
+```{r}
+head(model_eln_df)
 ```
