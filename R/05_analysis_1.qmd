@@ -73,7 +73,7 @@ model_vital_df <- model_nest_df |>
 ```
 
 ```{r}
-head(model_vital_df)
+slice_min(model_vital_df, p.adj, n= 10)
 ```
 
 #### Visualizations
@@ -82,20 +82,21 @@ head(model_vital_df)
 forest_plot <- model_vital_df |>
   slice_min(p.adj, n = 15) |>
   mutate(gene_name = fct_reorder(gene_name, estimate)) |>
-  ggplot(aes(x = estimate, y = gene_name)) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "gray50") +
-  geom_errorbar(
-    aes(xmin = conf.low, xmax = conf.high),
-    width = 0.2,
-    color = "maroon"
-  ) +
-  geom_point(size = 3, color = "maroon") +
-  labs(
-    title = "Differentially Expressed Genes: Alive vs Dead vital status",
-    subtitle = "Genes of lowest FDR (BeatAML1.0-COHORT)",
-    x = expression(log[2] ~ "Fold Change (95% CI)"),
-    y = NULL
-  ) +
+  ggplot(aes(x = estimate, 
+             y = gene_name,
+             color = p.adj)) +
+  geom_vline(xintercept = 0, 
+             linetype = "dashed", 
+             color = "gray50") +
+  geom_errorbar(aes(xmin = conf.low, 
+                    xmax = conf.high),
+                width = 0.2) +
+  geom_point(size = 3) +
+  labs(title = "Differentially Expressed Genes: Alive vs Dead vital status",
+       subtitle = "Genes of lowest FDR (BeatAML1.0-COHORT)",
+       x = expression(log[2] ~ "Fold Change (95% CI)"),
+       y = NULL,
+       color = "FDR (5%)") +
   theme_minimal(base_size = 12) +
   theme(panel.grid.minor = element_blank())
 
@@ -104,11 +105,9 @@ forest_plot
 
 ```{r}
 volcano_plot <- model_vital_df |>
-  mutate(
-    neg_log10_p = -log10(p.value),
-    label = if_else(p.value < 0.05 & abs(estimate) > 1, 
-                    gene_name, NA_character_)
-  ) |>
+  mutate(neg_log10_p = -log10(p.value),
+         label = if_else(p.value < 0.05 & abs(estimate) > 1, 
+                         gene_name, NA_character_)) |>
   ggplot(aes(x = estimate, 
              y = neg_log10_p, 
              color = p.value < 0.05)) +
@@ -129,7 +128,8 @@ volcano_plot <- model_vital_df |>
                                 "TRUE" = "maroon"),
                      labels = c("FALSE" = "Not significant", 
                                 "TRUE" = "p-value < 0.05")) +
-  labs(title = "Volcano Plot: Dead vs Alive vital status",
+  labs(title = "Volcano Plot: Alive vs Dead vital status",
+       subtitle = "(BeatAML1.0-COHORT)",
        x = expression(log[2] ~ "Fold Change"),
        y = expression(-log[10] ~ "(p-value)"),
        color = NULL) +
@@ -179,7 +179,7 @@ model_eln_df <- eln_nest_df |>
 ```
 
 ```{r}
-head(model_eln_df)
+slice_min(model_eln_df, p.adj, n=10)
 ```
 
 #### Visualizations
@@ -188,20 +188,21 @@ head(model_eln_df)
 forest_plot <- model_eln_df |>
   slice_min(p.adj, n = 15) |>
   mutate(gene_name = fct_reorder(gene_name, estimate)) |>
-  ggplot(aes(x = estimate, y = gene_name)) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "gray50") +
-  geom_errorbar(
-    aes(xmin = conf.low, xmax = conf.high),
-    width = 0.2,
-    color = "maroon"
-  ) +
-  geom_point(size = 3, color = "maroon") +
-  labs(
-    title = "Differentially Expressed Genes: Favorable vs Adverse ELN risk",
-    subtitle = "Genes of lowest FDR (BeatAML1.0-COHORT)",
-    x = expression(log[2] ~ "Fold Change (95% CI)"),
-    y = NULL
-  ) +
+  ggplot(aes(x = estimate, 
+             y = gene_name,
+             color = p.adj)) +
+  geom_vline(xintercept = 0, 
+             linetype = "dashed", 
+             color = "gray50") +
+  geom_errorbar(aes(xmin = conf.low, 
+                    xmax = conf.high),
+                width = 0.2) +
+  geom_point(size = 3) +
+  labs(title = "Differentially Expressed Genes: Favorable vs Adverse ELN risk",
+       subtitle = "Genes of lowest FDR (BeatAML1.0-COHORT)",
+       x = expression(log[2] ~ "Fold Change (95% CI)"),
+       y = NULL,
+       color = "FDR (5%)") +
   theme_minimal(base_size = 12) +
   theme(panel.grid.minor = element_blank())
 
@@ -210,11 +211,9 @@ forest_plot
 
 ```{r}
 volcano_plot <- model_eln_df |>
-  mutate(
-    neg_log10_p = -log10(p.value),
-    label = if_else(p.value < 0.05 & abs(estimate) > 1, 
-                    gene_name, NA_character_)
-  ) |>
+  mutate(neg_log10_p = -log10(p.value),
+         label = if_else(p.value < 0.05 & abs(estimate) > 1, 
+                         gene_name, NA_character_)) |>
   ggplot(aes(x = estimate, 
              y = neg_log10_p, 
              color = p.value < 0.05)) +
@@ -235,7 +234,8 @@ volcano_plot <- model_eln_df |>
                                 "TRUE" = "maroon"),
                      labels = c("FALSE" = "Not significant", 
                                 "TRUE" = "p-value < 0.05")) +
-  labs(title = "Volcano Plot: Adverse vs Favorable ELN risk",
+  labs(title = "Volcano Plot: Favorable vs Adverse ELN risk",
+       subtitle = "(BeatAML1.0-COHORT)",
        x = expression(log[2] ~ "Fold Change"),
        y = expression(-log[10] ~ "(p-value)"),
        color = NULL) +
