@@ -19,6 +19,7 @@ library("here")
 
 ```{r}
 data_dir <- here("data")
+
 clean_df <- readr::read_tsv(file = file.path(data_dir,
                                                "02_dat_clean.tsv.gz"),
                               col_names = TRUE,
@@ -33,6 +34,59 @@ sample_map_clean <- readr::read_tsv(file = file.path(data_dir,
                                                "02_sample_map_clean.tsv.gz"),
                               col_names = TRUE,
                               show_col_types = FALSE)
+
+gtf_clean <- readr::read_tsv(file = file.path(data_dir,
+                                               "02_sample_map_clean.tsv.gz"),
+                              col_names = TRUE,
+                              show_col_types = FALSE)
+```
+
+#### Augment GTF
+
+CLEAN THIS TEXT UP CHARLOTTE *the regex in mutate() allows us to extract the gene ID group exons by gene ID and arrange it so it's sorted (necessary for next step) mutate the dataframe by collecting the gene lengths this is done by finding "start" and "end" for each the gtf contains multiple isoforms and they can have overlapping transcripts, so we have to account for this and not sum the overlapping bases so we make a union of sorts the data frame gets an extra column that contains TRUE/FALSE values (what we get from: start\>lag(...)) overlaps will return false, which helps us keep track of overlaps. default is set to -inf so the new_block is always created then take the cumsum() of the block and group it by geneid, chr etc... then use summarise() to create new columns with block start and end drop the groups from previous step here then use mutate again to find the block length for each start/end and take the sum of these to find the gene length. phew*
+
+```{r}
+{r}
+exons <- readr::read_tsv(gtf_path,
+  comment = "#",
+  col_names = c("chr",
+                "source",
+                "feature",
+                "start",
+                "end",
+                "score",
+                "strand",
+                "frame",
+                "attr"),
+  col_types = "cccddcccc") |>
+  filter(feature == "exon") |>
+  mutate(gene_id = str_extract(attr,
+                               '(?<=gene_id ")[^"]+'))
+
+gene_lengths <- exons |>
+  arrange(gene_id,
+          chr,
+          strand,
+          start,
+          end) |>
+  group_by(gene_id,
+           chr,
+           strand) |>
+  mutate(new_block = start > lag(cummax(end),
+                                 default = -Inf),
+         block_id = cumsum(new_block)) |>
+  group_by(gene_id,
+           chr,
+           strand,
+           block_id) |>
+  summarise(block_start = min(start),
+    block_end = max(end),
+    .groups = "drop") |>
+  mutate(block_length = block_end - block_start + 1) |>
+  group_by(gene_id) |>
+  summarise(gene_length = sum(block_length),
+            .groups = "drop")
+
 ```
 
 #### Construct metadata
@@ -76,66 +130,6 @@ augment_df <- augment_df |>
   mutate(log2_tpm = log2(tpm_unstranded + 1)) |> 
   relocate(log2_tpm, 
            .before = submitter_id)
-```
-
-```{r}
-exons <- readr::read_tsv(gtf_path,
-  comment = "#",
-  col_names = c("chr",
-                "source",
-                "feature",
-                "start",
-                "end",
-                "score",
-                "strand",
-                "frame",
-                "attr"),
-  col_types = "cccddcccc") |>
-  filter(feature == "exon") |>
-  mutate(gene_id = str_extract(attr,
-                               '(?<=gene_id ")[^"]+'))
-
-# the regex in mutate() allows us to extract the gene ID
-# group exons by gene ID and arrange it so it's sorted (necessary for next step)
-# mutate the dataframe by collecting the gene lengths
-# this is done by finding "start" and "end" for each
-# the gtf contains multiple isoforms and they can have overlapping
-# transcripts, so we have to account for this and not sum the overlapping bases
-# so we make a union of sorts
-# the data frame gets an extra column that contains TRUE/FALSE values 
-# (what we get from: start>lag(...)) overlaps will return false, which
-# helps us keep track of overlaps. default is set to -inf so the new_block
-# is always created
-# then take the cumsum() of the block and group it by geneid, chr etc...
-# then use summarise() to create new columns with block start and end
-# drop the groups from previous step here
-# then use mutate again to find the block length for each start/end
-# and take the sum of these to find the gene length. phew
-
-gene_lengths <- exons |>
-  arrange(gene_id,
-          chr,
-          strand,
-          start,
-          end) |>
-  group_by(gene_id,
-           chr,
-           strand) |>
-  mutate(new_block = start > lag(cummax(end),
-                                 default = -Inf),
-         block_id = cumsum(new_block)) |>
-  group_by(gene_id,
-           chr,
-           strand,
-           block_id) |>
-  summarise(block_start = min(start),
-    block_end = max(end),
-    .groups = "drop") |>
-  mutate(block_length = block_end - block_start + 1) |>
-  group_by(gene_id) |>
-  summarise(gene_length = sum(block_length),
-            .groups = "drop")
-
 ```
 
 #### Convert to count matrix with samples as columns

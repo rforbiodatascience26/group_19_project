@@ -17,12 +17,13 @@ library("here")
 
 ```{r}
 data_dir <- here("data")
+
 raw_df <- readr::read_tsv(file = file.path(data_dir,
                                              "01_dat_load.tsv.gz"), 
                             col_names = TRUE,     
                             show_col_types = FALSE)
 
-clean_gtf <- readr::read_tsv(file = file.path(data_dir,
+raw_gtf <- readr::read_tsv(file = file.path(data_dir,
                                               "01_gtf_load.tsv.gz"),
                              col_names = TRUE,
                              show_col_types = FALSE)
@@ -52,12 +53,10 @@ clean_df <- raw_df |>
            "unstranded",
            "tpm_unstranded"))
 
-# should i add this to the data frame?
-clean_gtf <- clean_gtf |>
+clean_gtf <- raw_gtf |>
   filter(feature == "exon") |>
   mutate(gene_id = str_extract(attr,
                                '(?<=gene_id ")[^"]+'))
-
 
 
 sample_map_clean <- sample_map_raw |> 
@@ -92,5 +91,9 @@ readr::write_tsv(clinical_clean,
 readr::write_tsv(sample_map_clean,
                  file.path(data_dir, 
                            "02_sample_map_clean.tsv.gz"))
+
+readr::write_tsv(clean_gtf,
+                 file.path(data_dir,
+                           "02_gtf_clean.tsv.gz"))
 
 ```
