@@ -14,6 +14,9 @@ editor: visual
 library("TCGAbiolinks")
 library("tidyverse")
 library("here")
+library("dplyr")
+library("readr")
+library("stringr")
 ```
 
 ## Create data directories
@@ -114,6 +117,15 @@ manifest_ids <- c("b9ce4455-6be7-4e59-8fe3-617eada17989",
                   "2819b67c-2e60-4126-b5e4-5245eadff554")
 ```
 
+To compute the TPM for each gene, download the gene annotation GDC.h38 GENCODE v36 GTF for fetching gene lengths later.
+
+```{r}
+gtf_url <- "https://api.gdc.cancer.gov/data/be002a2c-3b27-43f3-9e0f-fd47db92a6b5"
+gtf_file <- "gencode.v36.annotation.gtf.gz"
+gtf_path <- file.path(raw_data_dir,
+                      gtf_file)
+```
+
 ### Queue The Cancer Genome Atlas for count and clinical data
 
 ```{r}
@@ -168,21 +180,13 @@ if (file.exists("MANIFEST.txt")) {
 }
 ```
 
-## Load annotation
-
 ```{r}
-# download the gene annotation GDC.h38 GENCODE v36 GTF
-gtf_url <- "https://api.gdc.cancer.gov/data/be002a2c-3b27-43f3-9e0f-fd47db92a6b5"
-gtf_file <- "gencode.v36.annotation.gtf.gz"
-gtf_path <- file.path(raw_data_dir, gtf_file)
-
-# set timeout to 600 since the file is large
 options(timeout = 600)
+
 if (!file.exists(gtf_path)) {
   download.file(gtf_url,
                 destfile = gtf_path,
-                mode = "wb"
-                )
+                mode = "wb")
 }
 ```
 
@@ -204,6 +208,20 @@ raw_df <- readr::read_tsv(file = dataset_paths,
                           comment = "#",
                           id = "file",
                           show_col_types = FALSE)
+
+raw_gtf <- readr::read_tsv(file = gtf_path,
+                           comment = "#",
+                           show_col_types = FALSE,
+                           col_names = c("chr",
+                                         "source",
+                                         "feature",
+                                         "start",
+                                         "end",
+                                         "score",
+                                         "strand",
+                                         "frame",
+                                         "attr"),
+                           col_types = "cccddcccc")
 ```
 
 ## Write data file
@@ -220,4 +238,8 @@ readr::write_tsv(clinical_raw,
 readr::write_tsv(sample_map_raw, 
                  file.path(data_dir,
                            "01_sample_map_load.tsv.gz"))
+
+readr::write_tsv(raw_gtf,
+                 file.path(data_dir,
+                           "01_gtf_load.tsv.gz"))
 ```

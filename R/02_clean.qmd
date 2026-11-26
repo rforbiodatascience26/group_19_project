@@ -21,6 +21,12 @@ clean_df <- readr::read_tsv(file = file.path(data_dir,
                                              "01_dat_load.tsv.gz"), 
                             col_names = TRUE,     
                             show_col_types = FALSE)
+
+clean_gtf <- readr::read_tsv(file = file.path(data_dir,
+                                              "01_gtf_load.tsv.gz"),
+                             col_names = TRUE,
+                             show_col_types = FALSE)
+
 ```
 
 ## Clean data
@@ -35,6 +41,13 @@ clean_df <- clean_df |>
            "gene_type",             
            "unstranded",
            "tpm_unstranded"))
+
+clean_gtf <- clean_gtf |>
+  filter(feature == "exon") |>
+  mutate(gene_id = str_extract(attr,
+                               '(?<=gene_id ")[^"]+'))
+
+# should i add this to the data frame?
 ```
 
 ## Write data file
@@ -43,4 +56,6 @@ clean_df <- clean_df |>
 readr::write_tsv(clean_df,
                  file.path(data_dir, 
                            "02_dat_clean.tsv.gz"))
+
+
 ```
