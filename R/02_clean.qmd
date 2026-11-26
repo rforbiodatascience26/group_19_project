@@ -17,7 +17,7 @@ library("here")
 
 ```{r}
 data_dir <- here("data")
-clean_df <- readr::read_tsv(file = file.path(data_dir,
+raw_df <- readr::read_tsv(file = file.path(data_dir,
                                              "01_dat_load.tsv.gz"), 
                             col_names = TRUE,     
                             show_col_types = FALSE)
@@ -27,12 +27,22 @@ clean_gtf <- readr::read_tsv(file = file.path(data_dir,
                              col_names = TRUE,
                              show_col_types = FALSE)
 
+sample_map_raw <- readr::read_tsv(file = file.path(data_dir,
+                                                   "01_sample_map_load.tsv.gz"), 
+                            col_names = TRUE,     
+                            show_col_types = FALSE)
+
+clinical_raw <- readr::read_tsv(file = file.path(data_dir,
+                                                 "01_clin_load.tsv.gz"), 
+                            col_names = TRUE,     
+                            show_col_types = FALSE)
+
 ```
 
 ## Clean data
 
 ```{r}
-clean_df <- clean_df |>   
+clean_df <- raw_df |>   
   drop_na(gene_name) |>   
   mutate(sample_id = basename(dirname(file))) |>   
   select(c("sample_id",             
@@ -42,12 +52,30 @@ clean_df <- clean_df |>
            "unstranded",
            "tpm_unstranded"))
 
+# should i add this to the data frame?
 clean_gtf <- clean_gtf |>
   filter(feature == "exon") |>
   mutate(gene_id = str_extract(attr,
                                '(?<=gene_id ")[^"]+'))
 
-# should i add this to the data frame?
+
+
+sample_map_clean <- sample_map_raw |> 
+  select(
+    sample_id = id,
+    submitter_id = cases.submitter_id,
+    sample_type
+  )
+
+clinical_clean <- clinical_raw |> 
+  select(submitter_id,
+         vital_status,
+         sex_at_birth,
+         eln_risk_classification,
+         primary_diagnosis,
+         age_at_diagnosis,
+         race,
+         ethnicity)
 ```
 
 ## Write data file
@@ -57,5 +85,12 @@ readr::write_tsv(clean_df,
                  file.path(data_dir, 
                            "02_dat_clean.tsv.gz"))
 
+readr::write_tsv(clinical_clean,
+                 file.path(data_dir, 
+                           "02_clin_clean.tsv.gz"))
+
+readr::write_tsv(sample_map_clean,
+                 file.path(data_dir, 
+                           "02_sample_map_clean.tsv.gz"))
 
 ```

@@ -9,8 +9,9 @@ editor: visual
 ## Load libraries
 
 ```{r}
-#| message: false
-#| warning: false
+#| label: load-libraries
+#| message: FALSE
+#| warning: FALSE
 library("here")
 library("quarto")
 ```
@@ -18,18 +19,63 @@ library("quarto")
 # Run Project
 
 ```{r}
-source(here("R", 
-            "99_proj_func.R"))
+#| label: run-01_load.qmd
 quarto_render(here("R", 
                    "01_load.qmd"))
-#quarto_render(here("R", 
-#                                 "02_clean.qmd"))
-#quarto_render(here("R", 
-#                                 "03_augment.qmd"))
-#quarto_render(here("R", 
-#                                 "04_describe.qmd"))
-#quarto_render(here("R", 
-#                                 "05_analysis_1.qmd"))
-#quarto_render(here("R", 
-#                                 "06_analysis_2.qmd"))
+```
+
+```{r}
+#| label: run-02_clean.qmd
+quarto_render(here("R", 
+                   "02_clean.qmd"))
+```
+
+```{r}
+#| label: run-03_augment.qmd
+quarto_render(here("R", 
+                   "03_augment.qmd"))
+```
+
+```{r}
+#| label: run-04_describe.qmd
+quarto_render(here("R", 
+                   "04_describe.qmd"))
+```
+
+```{r}
+#| label: run-05_analysis_1.qmd
+#| eval: FALSE
+quarto_render(here("R", 
+                   "05_analysis_1.qmd"))
+```
+
+```{r}
+#| label: run-06_analysis_2.qmd
+#| eval: FALSE
+quarto_render(here("R", 
+                   "06_analysis_2.qmd"))
+```
+
+### Move results
+
+quarto renders our documents in a file structure relativ to where the quarto document is in the project. This workaround moves the fils to the results folder and deletes the R sub folder.
+
+```{r}
+#| label: move-results
+output_dir <- here("results", 
+                   "R")
+
+if (dir.exists(output_dir)) {
+
+  files <- list.files(output_dir, 
+                      full.names = TRUE)
+
+  file.rename(
+    from = files,
+    to = file.path(here("results"), 
+                   basename(files)))
+
+  unlink(output_dir,
+         recursive = TRUE)
+}
 ```

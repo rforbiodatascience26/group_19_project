@@ -19,10 +19,63 @@ library("here")
 
 ```{r}
 data_dir <- here("data")
-augment_df <- readr::read_tsv(file = file.path(data_dir,
+clean_df <- readr::read_tsv(file = file.path(data_dir,
                                                "02_dat_clean.tsv.gz"),
                               col_names = TRUE,
                               show_col_types = FALSE)
+
+clinical_clean <- readr::read_tsv(file = file.path(data_dir,
+                                               "02_clin_clean.tsv.gz"),
+                              col_names = TRUE,
+                              show_col_types = FALSE)
+
+sample_map_clean <- readr::read_tsv(file = file.path(data_dir,
+                                               "02_sample_map_clean.tsv.gz"),
+                              col_names = TRUE,
+                              show_col_types = FALSE)
+```
+
+#### Construct metadata
+
+We use left_join as this adds additional information (variables) for each observation in the left side dataframe (sample_map_clean) without altering its size. Clinical_clean contains clinical data for all observations in the cohort, whereas sample_map_clean have been filtered to the subset we are investigating.
+
+```{r}
+meta_df <- sample_map_clean |> 
+  left_join(clinical_clean,
+            by = join_by(submitter_id))
+```
+
+#### Merge metadata with count matrix
+
+```{r}
+augment_df <- clean_df |> 
+  left_join(meta_df,
+            by = join_by(sample_id))
+```
+
+#### Select subset of genes to perform analysis on
+
+To allow for a lighter downstream analysis computationally, we subset the data so noninformative and nonexpressed genes are removed (we maintain genes with a TPM_unstranded of \>1 in 20% of the samples) and only expressed protein-coding genes are maintained.
+
+```{r}
+n_samples <- nrow(meta_df)
+n_threshold <- n_samples %/% 5
+
+augment_df <- augment_df |> 
+  group_by(gene_name) |> 
+  filter(sum(tpm_unstranded > 1) >= n_threshold & gene_type == "protein_coding") |> 
+  ungroup()
+```
+
+#### Convert TPM counts to log2 expression values
+
+Centers expressions around 0 and allows for easier interpretability of fold changes.
+
+```{r}
+augment_df <- augment_df |> 
+  mutate(log2_tpm = log2(tpm_unstranded + 1)) |> 
+  relocate(log2_tpm, 
+           .before = submitter_id)
 ```
 
 ```{r}
@@ -88,29 +141,16 @@ gene_lengths <- exons |>
 #### Convert to count matrix with samples as columns
 
 ```{r}
-count_matrix <- df |> 
-  select(file, gene_id, unstranded) |> 
-  filter(str_starts(gene_id, "ENS")) |> 
-  pivot_wider(names_from = file,
-              values_from = unstranded) |> 
-  rename_with(.cols = starts_with("../data/"),
-              .fn = ~ str_split_i(string = .x,
-                                  pattern = "/",
-                                  i = -2))
-head(count_matrix)
-```
-
-```{r}
-augment_df_wider <- augment_df |>
-  select(sample_id, gene_id, unstranded) |>
-  pivot_wider(names_from = sample_id,
-              values_from = unstranded)
+#augment_df_wider <- augment_df |>
+#  select(sample_id, gene_id, unstranded) |>
+#  pivot_wider(names_from = sample_id,
+#              values_from = unstranded)
 ```
 
 ### Write data file
 
 ```{r}
-readr::write_tsv(df_aug,
+readr::write_tsv(augment_df,
                  file.path(data_dir,
                            "03_dat_aug.tsv.gz"))
 ```
