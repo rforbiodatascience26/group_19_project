@@ -1,2 +1,5 @@
 project:
   output-dir: results
+  render:
+    - "*.qmd"
+    - "!presentation.qmd"

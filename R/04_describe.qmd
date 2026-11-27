@@ -19,7 +19,8 @@ library("table1")
 ## Load data
 
 ```{r}
-data_dir <- here("data")  
+data_dir <- here("data")
+results_dir <- here("results")
 
 describe_df <- readr::read_tsv(file = file.path(data_dir,
                                                 "03_dat_aug.tsv.gz"),
@@ -82,7 +83,7 @@ describe_df |>
 ```
 
 ```{r}
-describe_df |> 
+plot_1 <- describe_df |> 
   distinct(sample_id, 
            .keep_all = TRUE) |>
   mutate(Age_group = cut(
@@ -104,6 +105,16 @@ describe_df |>
   theme(legend.position = "bottom",
         panel.grid.major.x = element_blank(),
         axis.text.x = element_text(vjust = 5))
+
+plot_1
+
+ggsave(
+  file.path(results_dir, "03_key_plot_1.png"),
+  plot = plot_1,
+  width = 8,
+  height = 6,
+  dpi = 300
+)
 ```
 
 ```{r}
