@@ -3,9 +3,9 @@
 .RData
 .Ruserdata
 
-# Dont save data to GitHub
+# Don't save data to GitHub
 data/
 results/
 
-# from RStudio?
+# from quarto
 /.quarto/
