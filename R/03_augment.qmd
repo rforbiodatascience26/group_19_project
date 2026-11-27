@@ -46,7 +46,6 @@ gtf_clean <- readr::read_tsv(file = file.path(data_dir,
 CLEAN THIS TEXT UP CHARLOTTE *the regex in mutate() allows us to extract the gene ID group exons by gene ID and arrange it so it's sorted (necessary for next step) mutate the dataframe by collecting the gene lengths this is done by finding "start" and "end" for each the gtf contains multiple isoforms and they can have overlapping transcripts, so we have to account for this and not sum the overlapping bases so we make a union of sorts the data frame gets an extra column that contains TRUE/FALSE values (what we get from: start\>lag(...)) overlaps will return false, which helps us keep track of overlaps. default is set to -inf so the new_block is always created then take the cumsum() of the block and group it by geneid, chr etc... then use summarise() to create new columns with block start and end drop the groups from previous step here then use mutate again to find the block length for each start/end and take the sum of these to find the gene length. phew*
 
 ```{r}
-{r}
 exons <- readr::read_tsv(gtf_path,
   comment = "#",
   col_names = c("chr",
